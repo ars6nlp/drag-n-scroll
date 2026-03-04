@@ -177,23 +177,43 @@ class Command(BaseCommand):
                 if word_hanzi in created_words:
                     course_day.new_words.add(created_words[word_hanzi])
 
-            # Create dialogue
-            dialogue = lesson['dialogue']
+            # Create dialogue for Session A
+            dialogue_data = lesson['dialogue']
             Dialogue.objects.create(
                 course_day=course_day,
-                speaker_a=dialogue['speaker_a'],
-                speaker_b=dialogue['speaker_b'],
-                text_zh=dialogue['zh'],
-                text_ru=dialogue['ru']
+                session_type='A',
+                lines=[
+                    {
+                        'speaker': dialogue_data['speaker_a'],
+                        'hanzi': dialogue_data['zh'],
+                        'pinyin': '',  # Could add later if needed
+                        'translation_ru': dialogue_data['ru'],
+                        'translation_kz': ''
+                    }
+                ],
+                question_hanzi=dialogue_data['zh'],
+                question_pinyin='',
+                question_translation_ru=dialogue_data['ru'],
+                question_translation_kz='',
+                audio_url='',
+                options=[],
+                explanation_ru='Прослушайте диалог и выберите правильный ответ.',
+                explanation_kz='Диалогты тыңыңынды талға.'
             )
 
             # Create word arrangement exercise
-            correct_sentence = self._get_correct_sentence(lesson['day'])
+            target_sentence = self._get_target_sentence(lesson['day'])
             WordArrangementExercise.objects.create(
                 course_day=course_day,
-                correct_sentence=correct_sentence,
-                shuffled_words=self._shuffle_sentence(correct_sentence),
-                hint=self._get_hint(lesson['day'])
+                session_type='A',
+                target_hanzi=target_sentence,
+                target_pinyin='',
+                target_translation_ru=self._get_translation_ru(lesson['day']),
+                target_translation_kz='',
+                audio_url='',
+                scrambled_words=self._scramble_sentence(target_sentence),
+                hint_ru=self._get_hint_ru(lesson['day']),
+                hint_kz=''
             )
 
             self.stdout.write(self.style.SUCCESS(f'✓ Created Lesson {lesson["day"]}: {lesson["title"]}'))
@@ -205,7 +225,7 @@ class Command(BaseCommand):
         self.stdout.write('  - 5 dialogues')
         self.stdout.write('  - 5 word arrangement exercises')
 
-    def _get_correct_sentence(self, day):
+    def _get_target_sentence(self, day):
         sentences = {
             1: '你好 你 好 吗',
             2: '我 有 三 个 苹果',
@@ -215,13 +235,23 @@ class Command(BaseCommand):
         }
         return sentences.get(day, '你好 世界')
 
-    def _shuffle_sentence(self, sentence):
+    def _scramble_sentence(self, sentence):
         words = sentence.split()
         import random
         random.shuffle(words)
         return ' '.join(words)
 
-    def _get_hint(self, day):
+    def _get_translation_ru(self, day):
+        translations = {
+            1: 'Привет, как дела?',
+            2: 'У меня три яблока',
+            3: 'Это мой дом',
+            4: 'Мы едим рис',
+            5: 'Сегодня понедельник'
+        }
+        return translations.get(day, 'Привет мир')
+
+    def _get_hint_ru(self, day):
         hints = {
             1: 'Порядок слов: приветствие + ты + хороший + вопросительная частица',
             2: 'Сначала подлежащее, потом сказуемое, потом дополнение',
