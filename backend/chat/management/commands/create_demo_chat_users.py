@@ -100,7 +100,7 @@ class Command(BaseCommand):
                 defaults={
                     'title': f'HSK {hsk_level} - {"Уровень 1" if hsk_level == 1 else "Начальный" if hsk_level == 2 else "Средний"}',
                     'description': f'Курс китайского языка HSK {hsk_level}',
-                    'duration_weeks': 5
+                    'total_days': 5
                 }
             )
 
