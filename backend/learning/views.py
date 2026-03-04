@@ -40,12 +40,25 @@ def main_screen(request):
     - hsk (optional): override user's HSK level (1-6)
     """
     user = request.user
-    user_profile = user.profile
 
-    # Get or create user progress
-    user_progress = user.progress
-    if not user_progress:
-        # Create progress record if it doesn't exist
+    # Safely get user profile with defaults
+    try:
+        user_profile = user.profile
+        if not user_profile:
+            # Create profile if it doesn't exist
+            user_profile = UserProfile.objects.create(user=user)
+    except Exception:
+        # If profile doesn't exist or error accessing it, create one
+        user_profile = UserProfile.objects.create(user=user)
+
+    # Get or create user progress safely
+    try:
+        user_progress = user.progress
+        if not user_progress:
+            # Create progress record if it doesn't exist
+            user_progress = UserCourseProgress.objects.create(user=user)
+    except Exception:
+        # Create progress record if it doesn't exist or error accessing it
         user_progress = UserCourseProgress.objects.create(user=user)
 
     # Check if specific HSK level requested
@@ -58,7 +71,7 @@ def main_screen(request):
         except ValueError:
             return Response({'error': 'Invalid HSK level'}, status=status.HTTP_400_BAD_REQUEST)
     else:
-        hsk_level = user_profile.current_hsk_level
+        hsk_level = getattr(user_profile, 'current_hsk_level', 1)
 
     # Check if specific day requested
     day_number = request.query_params.get('day')
