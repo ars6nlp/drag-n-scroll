@@ -1392,3 +1392,25 @@ def create_demo_data(request):
             {'error': f'Failed to create demo data: {str(e)}'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+
+@api_view(['POST'])
+@permission_classes([])
+def create_full_demo_course(request):
+    """Create complete demo course with 5 lessons"""
+    from django.core.management import call_command
+
+    try:
+        call_command('create_full_demo_course')
+
+        return Response({
+            'status': 'success',
+            'message': 'Full demo course created successfully'
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        import traceback
+        return Response({
+            'status': 'error',
+            'message': str(e),
+            'traceback': traceback.format_exc()
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

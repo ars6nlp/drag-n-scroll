@@ -29,4 +29,5 @@ urlpatterns = [
 
     # Admin: Create Demo Data
     path('create-demo-data/', views.create_demo_data, name='create-demo-data'),
+    path('create-full-demo-course/', views.create_full_demo_course, name='create-full-demo-course'),
 ]
