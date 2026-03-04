@@ -129,9 +129,19 @@ export const useAuthStore = defineStore('auth', () => {
       isLoading.value = true
       try {
         await loadUser()
-      } catch {
-        // Token might be expired, clear auth
-        logout()
+      } catch (error: any) {
+        // Token might be expired, clear auth but only if NOT on login page
+        const currentPath = window.location.pathname
+        if (currentPath !== '/login' && currentPath !== '/register') {
+          // Clear local state only (don't call logout API)
+          user.value = null
+          profile.value = null
+          progress.value = null
+          accessToken.value = null
+          refreshToken.value = null
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('refresh_token')
+        }
       } finally {
         isLoading.value = false
         isInitialized.value = true

@@ -93,6 +93,8 @@ onMounted(() => {
   // Check if user was redirected due to expired session
   if (route.query.session_expired === 'true') {
     infoMessage.value = 'Ваша сессия истекла. Пожалуйста, войдите снова или зарегистрируйтесь.'
+    // Clear the query param to prevent showing message again on reload
+    router.replace({ query: {} })
   }
 })
 

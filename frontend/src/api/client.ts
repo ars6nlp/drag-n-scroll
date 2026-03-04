@@ -54,6 +54,16 @@ class APIClient {
         if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
           originalRequest._retry = true
 
+          // Don't try to refresh if we're already on login/register pages
+          const currentPath = window.location.pathname
+          if (currentPath === '/login' || currentPath === '/register') {
+            console.warn('[API] Already on auth page, skipping refresh')
+            localStorage.removeItem('access_token')
+            localStorage.removeItem('refresh_token')
+            localStorage.removeItem('ai_access_until')
+            return Promise.reject(error)
+          }
+
           // If already refreshing, wait
           if (this.isRefreshing) {
             return new Promise((resolve, reject) => {
@@ -107,13 +117,17 @@ class APIClient {
               localStorage.removeItem('access_token')
               localStorage.removeItem('refresh_token')
               localStorage.removeItem('ai_access_until')
-              // Also clear Pinia state by reloading page without redirect
-              window.location.href = '/login?session_expired=true'
+              // Only redirect if not already on login page
+              if (currentPath !== '/login') {
+                window.location.href = '/login?session_expired=true'
+              }
             } else {
               // For other errors, still clear tokens but don't show special message
               localStorage.removeItem('access_token')
               localStorage.removeItem('refresh_token')
-              window.location.href = '/login'
+              if (currentPath !== '/login') {
+                window.location.href = '/login'
+              }
             }
             return Promise.reject(refreshError)
           }
