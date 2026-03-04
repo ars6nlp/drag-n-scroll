@@ -23,6 +23,11 @@
         </h2>
 
         <form @submit.prevent="handleLogin" class="cyber-form">
+          <div v-if="infoMessage" class="info-alert">
+            <span class="alert-icon">ℹ</span>
+            {{ infoMessage }}
+          </div>
+
           <div v-if="error" class="error-alert">
             <span class="alert-icon">⚠</span>
             {{ error }}
@@ -67,11 +72,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
 const form = ref({
@@ -81,6 +87,14 @@ const form = ref({
 
 const isLoading = ref(false)
 const error = ref('')
+const infoMessage = ref('')
+
+onMounted(() => {
+  // Check if user was redirected due to expired session
+  if (route.query.session_expired === 'true') {
+    infoMessage.value = 'Ваша сессия истекла. Пожалуйста, войдите снова или зарегистрируйтесь.'
+  }
+})
 
 async function handleLogin() {
   isLoading.value = true
@@ -273,6 +287,19 @@ async function handleLogin() {
   border-radius: var(--radius-md);
   color: var(--color-accent-red);
   font-size: 0.9rem;
+}
+
+.info-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(0, 245, 255, 0.1);
+  border: 1px solid var(--color-neon-cyan);
+  border-radius: var(--radius-md);
+  color: var(--color-neon-cyan);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
 }
 
 .alert-icon {

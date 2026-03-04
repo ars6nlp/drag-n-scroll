@@ -95,14 +95,26 @@ class APIClient {
 
             this.isRefreshing = false
             return this.client(originalRequest)
-          } catch (refreshError) {
+          } catch (refreshError: any) {
             console.error('[API] Token refresh failed:', refreshError)
             this.isRefreshing = false
 
-            // Clear tokens and redirect to login
-            localStorage.removeItem('access_token')
-            localStorage.removeItem('refresh_token')
-            window.location.href = '/login'
+            // Check if error is due to invalid/expired token or user not found
+            const errorStatus = refreshError.response?.status
+            if (errorStatus === 401 || errorStatus === 404) {
+              console.warn('[API] Session expired or user not found. Clearing tokens...')
+              // Clear ALL auth data
+              localStorage.removeItem('access_token')
+              localStorage.removeItem('refresh_token')
+              localStorage.removeItem('ai_access_until')
+              // Also clear Pinia state by reloading page without redirect
+              window.location.href = '/login?session_expired=true'
+            } else {
+              // For other errors, still clear tokens but don't show special message
+              localStorage.removeItem('access_token')
+              localStorage.removeItem('refresh_token')
+              window.location.href = '/login'
+            }
             return Promise.reject(refreshError)
           }
         }
