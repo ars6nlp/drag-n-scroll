@@ -160,18 +160,42 @@ def mark_messages_read(request, room_id):
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def get_suggested_users(request):
-    """Get suggested users to chat with"""
+    """Get suggested users to chat with - always shows demo users first"""
     user = request.user
 
-    # Get users excluding current user and those already in direct chats
+    # Demo bot users that should always appear first
+    demo_usernames = ['Li_Mei', 'Wang_Wei', 'Chen_Yu']
+    demo_users_info = {
+        'Li_Mei': {'bio': 'Преподаватель китайского языка из Пекина 🇨🇳'},
+        'Wang_Wei': {'bio': 'Изучает русский язык, любит общаться 📚'},
+        'Chen_Yu': {'bio': 'Студент университета, помогает с практикой 🎓'}
+    }
+
+    # Get demo users
+    demo_users = User.objects.filter(username__in=demo_usernames).exclude(id=user.id)
+
+    # Get users excluding current user, demo users, and those already in direct chats
     existing_chat_users = User.objects.filter(
         chat_rooms__room_type='direct',
         chat_rooms__created_by=user
     )
 
-    suggested = User.objects.exclude(id=user.id).exclude(id__in=existing_chat_users)[:10]
+    suggested = User.objects.exclude(id=user.id).exclude(username__in=demo_usernames).exclude(id__in=existing_chat_users)[:7]
 
     data = []
+
+    # Add demo users first
+    for u in demo_users:
+        bio = demo_users_info.get(u.username, {}).get('bio', '')
+        data.append({
+            'id': u.id,
+            'username': u.username,
+            'bio': bio,
+            'avatar': None,
+            'online': True  # Demo users always appear online
+        })
+
+    # Add other users
     for u in suggested:
         # Safely extract profile data
         bio = ''
