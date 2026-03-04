@@ -440,6 +440,16 @@ def _get_step_2_data(session):
             'audio_url': word.audio_url
         })
 
+    # If no new words available, auto-complete step 2 and move to step 3
+    if not words_data:
+        # Mark step 2 as completed
+        session.step_2_completed_at = timezone.now()
+        session.current_step = 3
+        session.step_3_started_at = timezone.now()
+        session.save()
+        # Auto-move to step 3
+        return _get_step_3_data(session)
+
     response_data = {
         'step': 2,
         'step_type': 'NEW_WORDS',
@@ -515,6 +525,16 @@ def _get_step_3_data(session):
             'components': grammar_task.components
         }
 
+    # If no grammar task available, auto-complete step 3 and move to step 4
+    if not task_data:
+        # Mark step 3 as completed
+        session.step_3_completed_at = timezone.now()
+        session.current_step = 4
+        session.step_4_started_at = timezone.now()
+        session.save()
+        # Auto-move to step 4
+        return _get_step_4_data(session)
+
     response_data = {
         'step': 3,
         'step_type': 'GRAMMAR',
@@ -553,6 +573,16 @@ def _get_step_4_data(session):
             'audio_url': dialogue.audio_url,
             'options': dialogue.options
         }
+
+    # If no dialogue available, auto-complete step 4 and move to step 5
+    if not dialogue_data:
+        # Mark step 4 as completed
+        session.step_4_completed_at = timezone.now()
+        session.current_step = 5
+        session.step_5_started_at = timezone.now()
+        session.save()
+        # Auto-move to step 5
+        return _get_step_5_data(session)
 
     response_data = {
         'step': 4,
@@ -593,6 +623,17 @@ def _get_step_5_data(session):
             'hint_ru': exercise.hint_ru,
             'hint_kz': exercise.hint_kz
         }
+
+    # If no exercise available, auto-complete session
+    if not exercise_data:
+        # Mark step 5 and session as completed
+        session.step_5_completed_at = timezone.now()
+        session.is_completed = True
+        session.completed_at = timezone.now()
+        session.current_step = 6
+        session.save()
+        # Return session completion data
+        return _get_session_summary(session)
 
     response_data = {
         'step': 5,
