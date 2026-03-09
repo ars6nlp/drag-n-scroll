@@ -273,7 +273,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 MIT License - see LICENSE file for details
 
-## 🙏 Acknowledgments
+##  Acknowledgments
 
 - SuperMemo SM-2 algorithm
 - HSK standardized curriculum
