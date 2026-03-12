@@ -34,7 +34,7 @@ Drag'n'Scroll/
 │   ├── vocab/              # Vocabulary & Grammar
 │   ├── learning            # Sessions & SRS
 │   ├── manage.py
-│   └── requirements.txt
+│   └── requirement.txt
 ├── frontend/               # Vue 3 Application
 │   ├── src/
 │   │   ├── api/           # API client
