@@ -164,10 +164,6 @@ async function handleLogin() {
     isLoading.value = false
   }
 }
-  } finally {
-    isLoading.value = false
-  }
-}
 
 function fillDemoUser(username: string) {
   form.value.username = username
