@@ -87,7 +87,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { speakChinese } from '@/utils/speech'
 
@@ -103,6 +103,24 @@ const builtSentence = ref<any[]>([])
 const showResult = ref(false)
 const isCorrect = ref(false)
 const correctAnswer = ref('')
+
+// Debug: Log what data we're receiving
+onMounted(() => {
+  console.log('=== Step3Component mounted ===')
+  console.log('stepData:', props.stepData)
+  console.log('stepData keys:', props.stepData ? Object.keys(props.stepData) : 'no stepData')
+  console.log('grammar_rule:', props.stepData?.grammar_rule)
+  console.log('components:', props.stepData?.components)
+})
+
+// Watch for stepData changes
+import { watch } from 'vue'
+watch(() => props.stepData, (newData) => {
+  console.log('=== Step3Component stepData changed ===')
+  console.log('stepData:', newData)
+  console.log('grammar_rule:', newData?.grammar_rule)
+  console.log('components:', newData?.components)
+}, { immediate: true, deep: true })
 
 const userLanguage = computed(() => {
   return authStore.user?.profile?.learning_language || 'RU'

@@ -272,8 +272,12 @@ async function goToNextStep() {
 
 async function loadStepData(stepNumber: number) {
   try {
+    console.log('=== Loading step data ===', stepNumber)
     // Fetch step data from API
     await sessionStore.moveToStep(stepNumber)
+    console.log('=== Step data loaded ===')
+    console.log('sessionStore.currentStepData:', sessionStore.currentStepData)
+    console.log('sessionStore.currentStep:', sessionStore.currentStep)
     // Store will be updated by moveToStep
   } catch (err) {
     console.error('Error loading step data:', err)
