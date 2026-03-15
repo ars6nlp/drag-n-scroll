@@ -163,10 +163,6 @@ function getHint(item: any) {
   return userLanguage.value === 'KZ' ? item.hint_kz : item.hint_ru
 }
 
-function getHint(item: any) {
-  return userLanguage.value === 'KZ' ? item.hint_kz : item.hint_ru
-}
-
 function addToArrangement(word: any) {
   const emptySlot = arrangementSlots.value.find(s => !s.word)
   if (emptySlot) {
