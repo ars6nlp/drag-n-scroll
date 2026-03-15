@@ -45,54 +45,56 @@ class UserSerializer(BaseUserSerializer):
     def get_profile(self, obj):
         """Safely get user profile - create if missing"""
         try:
-            if hasattr(obj, 'profile'):
-                return UserProfileSerializer(obj.profile).data
-            else:
-                # Profile missing - create it
-                from .models import UserProfile
-                profile = UserProfile.objects.create(
-                    user=obj,
-                    learning_language='RU'
-                )
+            # Try to get existing profile
+            from .models import UserProfile
+            profile, created = UserProfile.objects.get_or_create(
+                user=obj,
+                defaults={'learning_language': 'RU'}
+            )
+
+            if profile:
                 return UserProfileSerializer(profile).data
         except Exception as e:
             # Log error but don't fail - return default
             import logging
             logger = logging.getLogger(__name__)
             logger.error(f"Error getting profile for user {obj.username}: {e}")
-            return {
-                'learning_language': 'RU',
-                'current_hsk_level': 1,
-                'created_at': None,
-                'updated_at': None
-            }
+
+        # Return default if anything fails
+        return {
+            'learning_language': 'RU',
+            'current_hsk_level': 1,
+            'created_at': None,
+            'updated_at': None
+        }
 
     def get_progress(self, obj):
         """Safely get user progress - create if missing"""
         try:
-            if hasattr(obj, 'progress'):
-                return UserCourseProgressSerializer(obj.progress).data
-            else:
-                # Progress missing - create it
-                from .models import UserCourseProgress
-                progress = UserCourseProgress.objects.create(user=obj)
+            # Try to get existing progress
+            from .models import UserCourseProgress
+            progress, created = UserCourseProgress.objects.get_or_create(user=obj)
+
+            if progress:
                 return UserCourseProgressSerializer(progress).data
         except Exception as e:
             # Log error but don't fail - return default
             import logging
             logger = logging.getLogger(__name__)
             logger.error(f"Error getting progress for user {obj.username}: {e}")
-            return {
-                'current_day': 1,
-                'current_lesson': 1,
-                'current_step': 1,
-                'total_xp': 0,
-                'streak_days': 0,
-                'last_study_date': None,
-                'completed_days': [],
-                'created_at': None,
-                'updated_at': None
-            }
+
+        # Return default if anything fails
+        return {
+            'current_day': 1,
+            'current_lesson': 1,
+            'current_step': 1,
+            'total_xp': 0,
+            'streak_days': 0,
+            'last_study_date': None,
+            'completed_days': [],
+            'created_at': None,
+            'updated_at': None
+        }
 
     def get_followers_count(self, obj):
         """Get count of users following this user"""
@@ -184,54 +186,56 @@ class UserDetailSerializer(serializers.ModelSerializer):
     def get_profile(self, obj):
         """Safely get user profile - create if missing"""
         try:
-            if hasattr(obj, 'profile'):
-                return UserProfileSerializer(obj.profile).data
-            else:
-                # Profile missing - create it
-                from .models import UserProfile
-                profile = UserProfile.objects.create(
-                    user=obj,
-                    learning_language='RU'
-                )
+            # Try to get existing profile
+            from .models import UserProfile
+            profile, created = UserProfile.objects.get_or_create(
+                user=obj,
+                defaults={'learning_language': 'RU'}
+            )
+
+            if profile:
                 return UserProfileSerializer(profile).data
         except Exception as e:
             # Log error but don't fail - return default
             import logging
             logger = logging.getLogger(__name__)
             logger.error(f"Error getting profile for user {obj.username}: {e}")
-            return {
-                'learning_language': 'RU',
-                'current_hsk_level': 1,
-                'created_at': None,
-                'updated_at': None
-            }
+
+        # Return default if anything fails
+        return {
+            'learning_language': 'RU',
+            'current_hsk_level': 1,
+            'created_at': None,
+            'updated_at': None
+        }
 
     def get_progress(self, obj):
         """Safely get user progress - create if missing"""
         try:
-            if hasattr(obj, 'progress'):
-                return UserCourseProgressSerializer(obj.progress).data
-            else:
-                # Progress missing - create it
-                from .models import UserCourseProgress
-                progress = UserCourseProgress.objects.create(user=obj)
+            # Try to get existing progress
+            from .models import UserCourseProgress
+            progress, created = UserCourseProgress.objects.get_or_create(user=obj)
+
+            if progress:
                 return UserCourseProgressSerializer(progress).data
         except Exception as e:
             # Log error but don't fail - return default
             import logging
             logger = logging.getLogger(__name__)
             logger.error(f"Error getting progress for user {obj.username}: {e}")
-            return {
-                'current_day': 1,
-                'current_lesson': 1,
-                'current_step': 1,
-                'total_xp': 0,
-                'streak_days': 0,
-                'last_study_date': None,
-                'completed_days': [],
-                'created_at': None,
-                'updated_at': None
-            }
+
+        # Return default if anything fails
+        return {
+            'current_day': 1,
+            'current_lesson': 1,
+            'current_step': 1,
+            'total_xp': 0,
+            'streak_days': 0,
+            'last_study_date': None,
+            'completed_days': [],
+            'created_at': None,
+            'updated_at': None
+        }
 
     def get_followers_count(self, obj):
         """Get count of users following this user"""

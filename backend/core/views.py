@@ -9,8 +9,11 @@ from django.db import connections
 from django.core.management import call_command
 from django.conf import settings
 import re
-from .models import User, UserProfile
+import logging
+from .models import User, UserProfile, UserCourseProgress
 from .serializers import UserProfileSerializer, UserDetailSerializer, UserSerializer
+
+logger = logging.getLogger(__name__)
 
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
@@ -56,6 +59,45 @@ class UserByIdView(generics.RetrieveAPIView):
     def get_object(self):
         user_id = self.kwargs.get('user_id')
         return get_object_or_404(User, id=user_id)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def debug_auth(request):
+    """
+    Debug endpoint to check auth state
+    """
+    user = request.user
+    try:
+        profile = UserProfile.objects.get(user=user)
+        profile_data = {
+            'exists': True,
+            'learning_language': profile.learning_language,
+            'current_hsk_level': profile.current_hsk_level,
+        }
+    except UserProfile.DoesNotExist:
+        profile_data = {'exists': False}
+
+    try:
+        progress = UserCourseProgress.objects.get(user=user)
+        progress_data = {
+            'exists': True,
+            'current_day': progress.current_day,
+            'total_xp': progress.total_xp,
+        }
+    except UserCourseProgress.DoesNotExist:
+        progress_data = {'exists': False}
+
+    return Response({
+        'user': {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'is_active': user.is_active,
+        },
+        'profile': profile_data,
+        'progress': progress_data,
+    })
 
 
 def mask_database_url(url):
