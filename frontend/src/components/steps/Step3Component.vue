@@ -114,7 +114,6 @@ onMounted(() => {
 })
 
 // Watch for stepData changes
-import { watch } from 'vue'
 watch(() => props.stepData, (newData) => {
   console.log('=== Step3Component stepData changed ===')
   console.log('stepData:', newData)

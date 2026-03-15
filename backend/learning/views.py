@@ -222,7 +222,29 @@ def initialize_demo_course(request):
             question_translation_ru=dialogue_data['ru'],
             question_translation_kz='',
             audio_url='',
-            options=[],
+            options=[
+                {
+                    'hanzi': '是',
+                    'pinyin': 'Shì',
+                    'translation_ru': 'Да',
+                    'translation_kz': 'Иә',
+                    'is_correct': True
+                },
+                {
+                    'hanzi': '不',
+                    'pinyin': 'Bù',
+                    'translation_ru': 'Нет',
+                    'translation_kz': 'Жоқ',
+                    'is_correct': False
+                },
+                {
+                    'hanzi': '也许',
+                    'pinyin': 'Yěxǔ',
+                    'translation_ru': 'Может быть',
+                    'translation_kz': 'Мүмкін',
+                    'is_correct': False
+                }
+            ],
             explanation_ru='Прослушайте диалог и выберите правильный ответ.',
             explanation_kz='Диалогты тыңыңыз.'
         )
