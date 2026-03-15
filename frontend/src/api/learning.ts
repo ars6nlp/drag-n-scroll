@@ -155,4 +155,10 @@ export const learningAPI = {
   async submitStep5(data: Step5SubmitRequest): Promise<StepSubmitResponse> {
     return apiClient.post('/learning/submit/step-5/', data)
   },
+
+  // Initialize demo course with data
+  async initializeDemoCourse(hskLevel?: number): Promise<{success: boolean, message: string, words_created: number}> {
+    const data = hskLevel ? { hsk_level: hskLevel } : {}
+    return apiClient.post('/learning/initialize-demo/', data)
+  },
 }

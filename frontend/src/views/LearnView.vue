@@ -18,13 +18,25 @@
 
     <!-- Main Content -->
     <div v-else class="content">
+      <!-- Empty Course Warning -->
+      <div v-if="authStore.isAuthenticated && isEmptyCourse" class="empty-course-warning">
+        <div class="warning-content">
+          <p class="warning-title">📚 Курс пустой</p>
+          <p class="warning-text">Нажмите кнопку ниже, чтобы добавить демо-уроки</p>
+          <button @click="initializeDemo" class="init-btn" :disabled="isInitializing">
+            {{ isInitializing ? 'СОЗДАНИЕ...' : 'СОЗДАТЬ ДЕМО-КУРС' }}
+          </button>
+          <p v-if="initError" class="error-message">{{ initError }}</p>
+        </div>
+      </div>
+
       <!-- Auth Warning for non-authenticated users -->
       <div v-if="!authStore.isAuthenticated" class="auth-warning">
         <p class="warning-text">⚠️ Войдите в аккаунт для сохранения прогресса</p>
       </div>
 
       <!-- Header -->
-      <div class="header">
+      <div class="header" v-if="!isEmptyCourse">
         <div class="day-info">
           <div class="hsk-selector">
             <button @click="changeHSKLevel(-1)" class="hsk-nav-btn" :disabled="currentHSKLevel <= 1">−</button>
@@ -175,6 +187,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
 import { useAuthStore } from '@/stores/auth'
+import { learningAPI } from '@/api/learning'
 
 const router = useRouter()
 const sessionStore = useSessionStore()
@@ -183,6 +196,11 @@ const authStore = useAuthStore()
 const isLoading = ref(true)
 const error = ref('')
 const currentDay = ref(1)
+const isEmptyCourse = computed(() => {
+  return displayData.value && !displayData.value.session_a && !displayData.value.session_b
+})
+const isInitializing = ref(false)
+const initError = ref('')
 
 // Initialize HSK level from user profile (will be updated in onMounted)
 const currentHSKLevel = ref(1)
@@ -348,6 +366,30 @@ function getProgress(sessionType: 'A' | 'B'): number {
 
 function goBack() {
   router.push('/app')
+}
+
+async function initializeDemo() {
+  if (!authStore.isAuthenticated) {
+    router.push('/login')
+    return
+  }
+
+  isInitializing.value = true
+  initError.value = ''
+
+  try {
+    console.log('[LearnView] Initializing demo course...')
+    const result = await learningAPI.initializeDemoCourse(currentHSKLevel.value)
+    console.log('[LearnView] Demo course initialized:', result)
+
+    // Reload main screen to show new data
+    await loadMainScreen()
+  } catch (err: any) {
+    console.error('[LearnView] Failed to initialize demo:', err)
+    initError.value = err.response?.data?.detail || err.message || 'Failed to initialize demo course'
+  } finally {
+    isInitializing.value = false
+  }
 }
 </script>
 
@@ -964,5 +1006,65 @@ function goBack() {
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
+}
+
+.empty-course-warning {
+  background: rgba(255, 107, 53, 0.1);
+  border: 2px solid rgba(255, 107, 53, 0.3);
+  border-radius: var(--radius-xl);
+  padding: 3rem 2rem;
+  text-align: center;
+  margin: 2rem auto;
+  max-width: 600px;
+}
+
+.warning-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.warning-title {
+  font-size: 1.5rem;
+  color: var(--color-accent-primary);
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+.warning-text {
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.init-btn {
+  background: var(--gradient-primary);
+  color: var(--color-text-primary);
+  padding: 1rem 3rem;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.init-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-primary), 0 0 30px rgba(255, 107, 53, 0.5);
+}
+
+.init-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: var(--color-accent-pink);
+  font-size: 0.9rem;
+  margin: 0;
 }
 </style>

@@ -26,6 +26,93 @@ from .serializers import (
 from .srs import update_srs, get_srs_batch, get_due_count, initialize_word_progress, get_mistakes_batch
 
 
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def initialize_demo_course(request):
+    """
+    Initialize demo course with words, grammar, and exercises
+    This can be called to populate an empty course
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+
+    user = request.user
+    hsk_level = request.data.get('hsk_level', 1)
+
+    logger.info(f"[InitDemo] Initializing demo course for user {user.username}, HSK {hsk_level}")
+
+    # Get course
+    course = Course.objects.filter(
+        hsk_level=hsk_level,
+        is_active=True
+    ).first()
+
+    if not course:
+        return Response({'error': 'No active course found'}, status=status.HTTP_404_NOT_FOUND)
+
+    # Demo words
+    demo_words_data = [
+        # Greetings
+        ('你好', 'nǐ hǎo', 'Привет', 'Сәлем', 1),
+        ('我', 'wǒ', 'Я', 'Мен', 1),
+        ('你', 'nǐ', 'Ты', 'Сен', 1),
+        ('谢谢', 'xièxie', 'Спасибо', 'Рахмет', 1),
+        ('再见', 'zàijiàn', 'До свидания', 'Сау бол', 1),
+        ('好', 'hǎo', 'Хороший', 'Жақсы', 1),
+        ('是', 'shì', 'Быть', 'Болу', 1),
+        ('不', 'bù', 'Нет', 'Жоқ', 1),
+        # Numbers
+        ('一', 'yī', 'Один', 'Бір', 1),
+        ('二', 'èr', 'Два', 'Екі', 1),
+        ('三', 'sān', 'Три', 'Үш', 1),
+        ('四', 'sì', 'Четыре', 'Төрт', 1),
+        ('五', 'wǔ', 'Пять', 'Бес', 1),
+        # Family
+        ('妈妈', 'māma', 'Мама', 'Ана', 1),
+        ('爸爸', 'bàba', 'Папа', 'Әке', 1),
+        ('哥哥', 'gēge', 'Старший брат', 'Ағасын ұлкен', 1),
+        ('姐姐', 'jiějie', 'Старшая сестра', 'Апа', 1),
+        # Common phrases
+        ('吃', 'chī', 'Есть', 'Жеу', 1),
+        ('喝', 'hē', 'Пить', 'Ішу', 1),
+        ('米饭', 'mǐfàn', 'Рис', 'Күріш', 1),
+        ('水', 'shuǐ', 'Вода', 'Су', 1),
+        ('茶', 'chá', 'Чай', 'Шай', 1),
+    ]
+
+    created_words = []
+    for hanzi, pinyin, ru, kz, hsk in demo_words_data:
+        word, created = Word.objects.get_or_create(
+            hanzi=hanzi,
+            defaults={
+                'pinyin': pinyin,
+                'translation_ru': ru,
+                'translation_kz': kz,
+                'hsk_level': hsk
+            }
+        )
+        created_words.append(word)
+
+    # Get first course day and add words to it
+    first_day = course.days.filter(day_number=1).first()
+    if first_day:
+        # Add first 8 words to day 1
+        words_to_add = created_words[:8]
+        first_day.new_words.set(words_to_add)
+        logger.info(f"[InitDemo] Added {len(words_to_add)} words to day 1")
+
+    return Response({
+        'success': True,
+        'message': f'Demo course initialized with {len(created_words)} words',
+        'course': {
+            'id': course.id,
+            'title': course.title,
+            'hsk_level': course.hsk_level
+        },
+        'words_created': len(created_words)
+    })
+
+
 # ============================================================================
 # MAIN SCREEN
 # ============================================================================
