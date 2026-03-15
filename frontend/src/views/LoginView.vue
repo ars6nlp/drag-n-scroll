@@ -144,10 +144,26 @@ async function handleLogin() {
 
   try {
     await authStore.login(form.value)
+    // Login successful - redirect will happen via router guard
+    console.log('[Login] Login successful, redirecting...')
     router.push('/app')
   } catch (err: any) {
-    console.error('[Login] Login failed with error:', err.response?.data)
-    error.value = err.response?.data?.detail || 'Вход не удался. Попробуйте снова.'
+    console.error('[Login] Login failed with error:', err)
+
+    // Better error messages
+    if (err.response?.status === 401) {
+      error.value = 'Неверное имя пользователя или пароль'
+    } else if (err.response?.status === 404) {
+      error.value = 'Пользователь не найден. Зарегистрируйтесь.'
+    } else if (err.code === 'ERR_NETWORK') {
+      error.value = 'Ошибка соединения. Проверьте подключение к интернету.'
+    } else {
+      error.value = err.response?.data?.detail || err.message || 'Вход не удался. Попробуйте снова.'
+    }
+  } finally {
+    isLoading.value = false
+  }
+}
   } finally {
     isLoading.value = false
   }

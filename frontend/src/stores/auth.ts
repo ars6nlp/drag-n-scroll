@@ -33,10 +33,25 @@ export const useAuthStore = defineStore('auth', () => {
   // Actions
   async function register(data: RegisterData) {
     try {
+      // Create user account
       await authAPI.register(data)
-      // Registration succeeded - user is created but not authenticated yet
-      // The djoser /auth/users/ endpoint only returns user data, not tokens
-      // User needs to login separately to get authenticated
+
+      // Auto-login after registration to get tokens
+      const loginData: LoginData = {
+        username: data.username,
+        password: data.password
+      }
+
+      const tokens = await authAPI.login(loginData)
+      accessToken.value = tokens.access
+      refreshToken.value = tokens.refresh
+
+      localStorage.setItem('access_token', tokens.access)
+      localStorage.setItem('refresh_token', tokens.refresh)
+
+      // Load user data
+      await loadUser()
+
       return true
     } catch (error) {
       console.error('Registration failed:', error)
@@ -47,16 +62,30 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(data: LoginData) {
     try {
       const response = await authAPI.login(data)
+
+      // Validate response has required tokens
+      if (!response.access || !response.refresh) {
+        throw new Error('Invalid server response: missing tokens')
+      }
+
       accessToken.value = response.access
       refreshToken.value = response.refresh
 
       localStorage.setItem('access_token', response.access)
       localStorage.setItem('refresh_token', response.refresh)
 
+      console.log('[Auth] Tokens received, loading user data...')
+
       await loadUser()
+      console.log('[Auth] User data loaded successfully')
       return true
-    } catch (error) {
-      console.error('Login failed:', error)
+    } catch (error: any) {
+      console.error('[Auth] Login failed:', error)
+      // Clear tokens if login failed
+      accessToken.value = null
+      refreshToken.value = null
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
       throw error
     }
   }
@@ -83,12 +112,24 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function loadUser() {
     try {
+      console.log('[Auth] Fetching current user...')
       const userData = await authAPI.getCurrentUser()
+      console.log('[Auth] User data received:', userData)
+
       user.value = userData
       profile.value = userData.profile || null
       progress.value = userData.progress || null
-    } catch (error) {
-      console.error('Failed to load user:', error)
+
+      console.log('[Auth] User profile and progress loaded:', {
+        hasProfile: !!profile.value,
+        hasProgress: !!progress.value
+      })
+    } catch (error: any) {
+      console.error('[Auth] Failed to load user:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      })
       throw error
     }
   }

@@ -9,11 +9,12 @@ import type {
 } from '@/types/api'
 
 export const authAPI = {
-  async register(data: RegisterData): Promise<{ user: User }> {
-    return apiClient.post('/auth/users/', data)
+  async register(data: RegisterData): Promise<User> {
+    const response = await apiClient.post<{ user: User }>('/auth/users/', data)
+    return response.user
   },
 
-  async login(data: LoginData): Promise<AuthTokens & { user: User }> {
+  async login(data: LoginData): Promise<AuthTokens> {
     return apiClient.post('/auth/jwt/create/', data)
   },
 
@@ -26,7 +27,14 @@ export const authAPI = {
   },
 
   async getCurrentUser(): Promise<User> {
-    return apiClient.get('/auth/users/me/')
+    try {
+      // Try our custom endpoint first
+      return await apiClient.get('/user/me/')
+    } catch (error) {
+      console.warn('[Auth] /user/me/ failed, trying /auth/users/me/', error)
+      // Fallback to djoser endpoint
+      return apiClient.get('/auth/users/me/')
+    }
   },
 
   async getProfile(): Promise<UserProfile> {

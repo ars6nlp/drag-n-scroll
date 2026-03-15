@@ -120,17 +120,17 @@ async function handleRegister() {
 
   try {
     await authStore.register(form.value)
-    // Registration successful - show success message and redirect to login
-    success.value = 'Регистрация успешна! Теперь войдите в систему.'
+    // Registration successful - user is now automatically logged in
+    success.value = 'Регистрация успешна! Перенаправление...'
     setTimeout(() => {
-      router.push('/login')
-    }, 1500)
+      router.push('/app')
+    }, 1000)
   } catch (err: any) {
     const errors = err.response?.data
     if (typeof errors === 'object') {
       error.value = Object.values(errors).flat().join('. ')
     } else {
-      error.value = 'Registration failed. Please try again.'
+      error.value = err.response?.data?.detail || 'Registration failed. Please try again.'
     }
   } finally {
     isLoading.value = false
