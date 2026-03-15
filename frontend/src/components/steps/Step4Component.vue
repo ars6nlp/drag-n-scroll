@@ -9,7 +9,7 @@
     </div>
 
     <!-- No Data State -->
-    <div v-if="!stepData || !stepData.data || !stepData.data.lines || stepData.data.lines.length === 0" class="no-data">
+    <div v-if="!stepData || !stepData.lines || stepData.lines.length === 0" class="no-data">
       <p>Нет упражнения на диалог для этого шага.</p>
       <p class="hint">Пожалуйста, вернитесь позже или свяжитесь с поддержкой.</p>
     </div>
@@ -19,7 +19,7 @@
       <div class="dialogue-card">
         <div class="dialogue-lines">
           <div
-            v-for="(line, index) in stepData.data.lines"
+            v-for="(line, index) in stepData.lines"
             :key="index"
             class="dialogue-line"
           >
@@ -35,8 +35,8 @@
         <div class="question-section">
           <h4>Вопрос:</h4>
           <div class="question">
-            <span class="question-hanzi clickable-word" @click="speakHanzi(stepData.data.question_hanzi)" title="Нажмите для озвучки">{{ stepData.data.question_hanzi }}</span>
-            <span class="question-pinyin clickable-word" @click="speakHanzi(stepData.data.question_hanzi)" title="Нажмите для озвучки">{{ stepData.data.question_pinyin }}</span>
+            <span class="question-hanzi clickable-word" @click="speakHanzi(stepData.question_hanzi)" title="Нажмите для озвучки">{{ stepData.question_hanzi }}</span>
+            <span class="question-pinyin clickable-word" @click="speakHanzi(stepData.question_hanzi)" title="Нажмите для озвучки">{{ stepData.question_pinyin }}</span>
           </div>
 
           <button @click="playAudio" class="play-audio-btn">
@@ -50,7 +50,7 @@
         <h4>Как бы вы ответили?</h4>
         <div class="options-grid">
           <button
-            v-for="(option, index) in stepData.data.options"
+            v-for="(option, index) in stepData.options"
             :key="index"
             @click="selectOption(index)"
             class="option-card"
@@ -118,9 +118,7 @@ function selectOption(index: number) {
   showResult.value = true
 
   // Set explanation
-  explanation.value = userLanguage.value === 'KZ'
-    ? props.stepData?.explanation_kz
-    : props.stepData?.explanation_ru
+  explanation.value = option?.explanation || ''
 
   // Auto-submit and move to next step after showing feedback
   setTimeout(() => {
