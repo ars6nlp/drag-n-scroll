@@ -1,9 +1,15 @@
 # Drag'n'Scroll - Chinese Learning App
 A modern Chinese language learning application with a TikTok-style interface and Spaced Repetition System (SRS).
 
+## 📄 Publication & Recognition
+- Presented at **Youth Digital Forum 2026** (International IT University, Almaty).
+- Peer-reviewed paper: *<title>*, <journal or proceedings>, 2026. <link or DOI>
+- Software copyright certificate: <number>, <date>.
+
 ## 🎯 Features
 - **TikTok-Style Interface**: Vertical swipe navigation for an immersive learning experience
 - **SuperMemo SM-2 Algorithm**: Proven spaced repetition system for effective vocabulary retention
+- **AI Chat Tutor**: An LLM tutor that answers questions about Chinese vocabulary, grammar, pinyin, and tones
 - **Multi-language Support**: Learn with Russian or Kazakh translations
 - **Progress Tracking**: XP system, streaks, and detailed statistics
 - **HSK-aligned Content**: Structured courses for HSK 1-6 levels
@@ -26,6 +32,7 @@ A modern Chinese language learning application with a TikTok-style interface and
 - Axios for API  communication
 
 ## 📁 Project Structure
+```
 Drag'n'Scroll/
 ├── backend/                 # Django REST API
 │   ├── config/             # Django settings
@@ -153,9 +160,9 @@ Creates:
 - `GET /api/vocab/grammar/` - List grammar rules
 
 ### SRS (Spaced Repetition)
-- GET /api/learning/srs/review-batch/` - Get words for review
-- POST /api/learning/srs/submit-review/` - Submit review results
-- GET /api/learning/srs/stats/` - Get SRS statistics
+- `GET /api/learning/srs/review-batch/` - Get words for review
+- `POST /api/learning/srs/submit-review/` - Submit review results
+- `GET /api/learning/srs/stats/` - Get SRS statistics
 
 See [backend/README.md](./backend/README.md) for complete API documentation.
 
@@ -171,6 +178,10 @@ The app implements the SuperMemo SM-2 algorithm with quality ratings:
 - **0**: Complete failure
 
 Intervals increase based on performance and ease factor.
+
+## 🤖 AI Tutor
+
+An LLM chat tutor (Llama 3.3 70B via the Groq API, `backend/chat/views.py`) answers learners' questions about Chinese vocabulary and grammar, explaining pinyin, translation, and tones. It keeps the conversation history, so follow-up questions stay in context. To enable it, add `GROQ_API_KEY` to `backend/.env` (a free key is available at https://console.groq.com/keys).
 
 ## 🎨 UI/UX Features
 
